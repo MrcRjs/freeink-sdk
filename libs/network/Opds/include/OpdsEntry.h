@@ -87,9 +87,27 @@ constexpr size_t MAX_HREF_CHARS = 768;
 constexpr size_t MAX_SEARCH_TEMPLATE_CHARS = 768;
 constexpr size_t MAX_PAGE_URL_CHARS = 768;
 constexpr size_t MAX_FACET_ENTRIES = 24;
-// Per-entry description cap: enough for the detail page's visible lines while
-// bounding worst-case feed RAM (MAX_ENTRIES * this).
+// Per-entry description cap, which bounds worst-case feed RAM (MAX_ENTRIES *
+// this). Boards that keep feed strings in PSRAM hold enough for several detail
+// pages; the others hold only what the detail page's visible lines need.
+#if FREEINK_DEVICE_PICCO || FREEINK_DEVICE_X4PRO
+constexpr size_t MAX_DESCRIPTION_CHARS = 4096;
+constexpr bool TRIM_CUT_DESCRIPTIONS = true;
+#else
 constexpr size_t MAX_DESCRIPTION_CHARS = 500;
+constexpr bool TRIM_CUT_DESCRIPTIONS = false;
+#endif
+
+// Drops a UTF-8 sequence a byte cap cut short at the end of `text`; XML
+// consumers reject the whole text otherwise.
+inline void trimPartialUtf8(std::string& text) {
+  size_t lead = text.size();
+  while (lead > 0 && text.size() - lead < 3 && (static_cast<unsigned char>(text[lead - 1]) & 0xC0) == 0x80) lead--;
+  if (lead == 0) return;
+  const auto first = static_cast<unsigned char>(text[--lead]);
+  const size_t expected = first >= 0xF0 ? 4 : first >= 0xE0 ? 3 : first >= 0xC0 ? 2 : 1;
+  if (text.size() - lead < expected) text.resize(lead);
+}
 
 // A parser is created once the response is flowing, when TLS has split the heap.
 // These size a vector to the largest free block instead of reserving the full

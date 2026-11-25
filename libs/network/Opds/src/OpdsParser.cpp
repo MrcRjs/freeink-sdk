@@ -363,6 +363,7 @@ void XMLCALL OpdsParser::endElement(void* userData, const XML_Char* name) {
         // <content> (the full text) overwrites; <summary> only fills a gap,
         // so whichever the feed provides wins without depending on order.
         if (self->collectCurrentEntry && (self->summaryIsContent || self->currentEntry.description.empty())) {
+          if (TRIM_CUT_DESCRIPTIONS) trimPartialUtf8(self->currentText);
           while (!self->currentText.empty() && self->currentText.back() == ' ') self->currentText.pop_back();
           self->currentEntry.description = self->currentText;
         }
