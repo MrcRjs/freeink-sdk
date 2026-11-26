@@ -89,7 +89,8 @@ constexpr size_t MAX_PAGE_URL_CHARS = 768;
 constexpr size_t MAX_FACET_ENTRIES = 24;
 // Per-entry description cap, which bounds worst-case feed RAM (MAX_ENTRIES *
 // this). Boards that keep feed strings in PSRAM hold enough for several detail
-// pages; the others hold only what the detail page's visible lines need.
+// pages; the others hold only what the detail page's visible lines need. OPDS 2
+// descriptions are also bounded by the JSON token buffer, which is smaller.
 #if FREEINK_DEVICE_PICCO || FREEINK_DEVICE_X4PRO
 constexpr size_t MAX_DESCRIPTION_CHARS = 4096;
 constexpr bool TRIM_CUT_DESCRIPTIONS = true;
